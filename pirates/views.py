@@ -25,16 +25,21 @@ class RemoverTesouro(DeleteView):
     success_url = reverse_lazy('lista_tesouros')
     template_name = 'clipping_confirm_delete.html'
 
-class ListarTesouros(View):
-    def get(self,request):
-        lst_tesouros = models.Tesouro.objects.annotate(valor_total=ExpressionWrapper(F('quantidade')*F('preco'),\
+class ListarTesouros(ListView):
+    model = models.Tesouro
+    template_name = 'lista_tesouros.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_geral'] = 0
+        for obj in context['object_list']:
+            context['total_geral'] += obj.valor_total
+        return context
+
+    def get_queryset(self, **kwargs):
+        return models.Tesouro.objects.annotate(valor_total=ExpressionWrapper(F('quantidade')*F('preco'),\
                             output_field=DecimalField(max_digits=10,\
                                                     decimal_places=2,\
                                                      blank=True)\
                                                     )\
                             )
-        valor_total = 0
-        for tesouro in lst_tesouros:
-            valor_total += tesouro.valor_total
-        return render(request,"lista_tesouros.html",{"lista_tesouros":lst_tesouros,
-                                                     "total_geral":valor_total})
