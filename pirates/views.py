@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
 
+from django.contrib.auth.models import User
 from . import models
 
 class SalvarTesouro():
@@ -16,7 +17,12 @@ class SalvarTesouro():
     success_url = reverse_lazy('lista_tesouros')
 
 class InserirTesouro(LoginRequiredMixin, SalvarTesouro, CreateView):
-    pass
+
+    def form_valid(self, form):
+        tesouro = form.save(commit=False)
+        tesouro.user = self.request.user
+        tesouro.save()
+        return super(SalvarTesouro, self).form_valid(form)
 
 class AtualizarTesouro(LoginRequiredMixin, SalvarTesouro, UpdateView):
     pass
@@ -38,9 +44,10 @@ class ListarTesouros(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self, **kwargs):
-        return models.Tesouro.objects.annotate(valor_total=ExpressionWrapper(F('quantidade')*F('preco'),\
+        queryset = models.Tesouro.objects.annotate(valor_total=ExpressionWrapper(F('quantidade')*F('preco'),\
                             output_field=DecimalField(max_digits=10,\
                                                     decimal_places=2,\
                                                      blank=True)\
                                                     )\
                             )
+        return queryset.filter(user=self.request.user)
