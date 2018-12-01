@@ -16,11 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from pirates import views
+from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('entrar/', auth_views.LoginView.as_view(template_name="login.html"), name="login"),
+    path('sair/', auth_views.LogoutView.as_view(next_page="login"), name="logout"),
     path('',views.ListarTesouros.as_view(),name="lista_tesouros"),
     path('inserir',views.InserirTesouro.as_view(),name="inserir"),
     path('editar/<int:pk>/',views.AtualizarTesouro.as_view(),name="editar"),

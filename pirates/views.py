@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.db.models import F,ExpressionWrapper,DecimalField
 from django.views import View
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.list import ListView
@@ -14,18 +15,18 @@ class SalvarTesouro():
     template_name = 'salvar_tesouro.html'
     success_url = reverse_lazy('lista_tesouros')
 
-class InserirTesouro(SalvarTesouro, CreateView):
+class InserirTesouro(LoginRequiredMixin, SalvarTesouro, CreateView):
     pass
 
-class AtualizarTesouro(SalvarTesouro, UpdateView):
+class AtualizarTesouro(LoginRequiredMixin, SalvarTesouro, UpdateView):
     pass
 
-class RemoverTesouro(DeleteView):
+class RemoverTesouro(LoginRequiredMixin, DeleteView):
     model = models.Tesouro
     success_url = reverse_lazy('lista_tesouros')
     template_name = 'clipping_confirm_delete.html'
 
-class ListarTesouros(ListView):
+class ListarTesouros(LoginRequiredMixin, ListView):
     model = models.Tesouro
     template_name = 'lista_tesouros.html'
 
